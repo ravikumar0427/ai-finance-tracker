@@ -4,7 +4,11 @@ import Budget from '../models/Budget.js';
 import User from '../models/User.js';
 import { summarizeTransactions } from '../services/financeAnalyzer.js';
 
-const formatCurrency = (value) => `₹${Math.round(value || 0).toLocaleString('en-IN')}`;
+const formatCurrency = (value) => {
+  const isNeg = Number(value || 0) < 0;
+  const num = Math.round(Math.abs(value || 0)).toLocaleString('en-IN');
+  return isNeg ? `- Rs. ${num}` : `Rs. ${num}`;
+};
 
 export const getMonthlyReport = async (req, res) => {
   try {
@@ -68,9 +72,9 @@ export const getMonthlyReport = async (req, res) => {
       // --- 1. HEADER BANNER ---
       doc.rect(40, 40, 515, 85).fill(primaryColor);
 
-      // Logo Icon box
+      // Logo Icon box with "FT" (FinTrack)
       doc.roundedRect(55, 55, 36, 36, 8).fill(secondaryColor);
-      doc.fillColor('#ffffff').fontSize(18).font('Helvetica-Bold').text('₹', 68, 62);
+      doc.fillColor('#ffffff').fontSize(14).font('Helvetica-Bold').text('FT', 64, 66);
 
       // Header Text
       doc.fillColor('#ffffff').fontSize(20).font('Helvetica-Bold').text('FinTrack', 102, 53);
@@ -91,14 +95,14 @@ export const getMonthlyReport = async (req, res) => {
         { label: 'Total Income', val: formatCurrency(report.totalIncome), color: emeraldColor, bg: '#ecfdf5', border: '#a7f3d0' },
         { label: 'Total Expense', val: formatCurrency(report.totalExpense), color: roseColor, bg: '#fff1f2', border: '#fecdd3' },
         { label: 'Net Savings', val: formatCurrency(report.savings), color: report.savings >= 0 ? emeraldColor : roseColor, bg: '#f0fdf4', border: '#bbf7d0' },
-        { label: 'Budget Remaining', val: formatCurrency(report.budgetRemaining), color: secondaryColor, bg: '#eff6ff', border: '#bfdbfe' }
+        { label: 'Budget Remaining', val: formatCurrency(report.budgetRemaining), color: report.budgetRemaining < 0 ? roseColor : secondaryColor, bg: '#eff6ff', border: '#bfdbfe' }
       ];
 
       cards.forEach((c, i) => {
         const x = 40 + i * (cardW + cardGap);
         doc.roundedRect(x, cardY, cardW, cardH, 6).fillAndStroke(c.bg, c.border);
         doc.fillColor(textMuted).fontSize(7.5).font('Helvetica-Bold').text(c.label.toUpperCase(), x + 8, cardY + 10, { width: cardW - 16 });
-        doc.fillColor(c.color).fontSize(13).font('Helvetica-Bold').text(c.val, x + 8, cardY + 28, { width: cardW - 16 });
+        doc.fillColor(c.color).fontSize(12).font('Helvetica-Bold').text(c.val, x + 8, cardY + 28, { width: cardW - 16 });
         
         const subtext = i === 2 
           ? (report.totalIncome > 0 ? `${Math.round((report.savings / report.totalIncome) * 100)}% savings rate` : '0%')
@@ -127,7 +131,7 @@ export const getMonthlyReport = async (req, res) => {
         categories.slice(0, 6).forEach((cat, idx) => {
           const pct = Math.round((cat.amount / totalExpenseVal) * 100);
           const barColor = palette[idx % palette.length];
-          const barMaxW = 280;
+          const barMaxW = 270;
           const barW = Math.max(6, Math.min(barMaxW, (cat.amount / totalExpenseVal) * barMaxW));
 
           // Category Label
@@ -139,8 +143,8 @@ export const getMonthlyReport = async (req, res) => {
           doc.roundedRect(135, currentY + 2, barW, 10, 3).fill(barColor);
 
           // Value and Percent
-          doc.fillColor(textDark).fontSize(8.5).font('Helvetica-Bold').text(formatCurrency(cat.amount), 430, currentY + 2, { width: 75, align: 'right' });
-          doc.fillColor(textMuted).fontSize(8).font('Helvetica').text(`${pct}%`, 515, currentY + 2, { width: 40, align: 'right' });
+          doc.fillColor(textDark).fontSize(8.5).font('Helvetica-Bold').text(formatCurrency(cat.amount), 415, currentY + 2, { width: 85, align: 'right' });
+          doc.fillColor(textMuted).fontSize(8).font('Helvetica').text(`${pct}%`, 505, currentY + 2, { width: 45, align: 'right' });
 
           currentY += 18;
         });
@@ -203,8 +207,9 @@ export const getMonthlyReport = async (req, res) => {
           doc.fillColor(textMuted).fontSize(7.5).font('Helvetica').text(tx.category, 295, currentY + 5, { width: 90, lineBreak: false });
           doc.fillColor(textMuted).fontSize(7.5).font('Helvetica').text(tx.paymentMethod?.replace('_', ' ').toUpperCase() || 'UPI', 390, currentY + 5, { width: 70 });
 
+          const amtStr = isIncome ? `+ ${formatCurrency(tx.amount)}` : `- ${formatCurrency(tx.amount)}`;
           doc.fillColor(isIncome ? emeraldColor : roseColor).fontSize(8).font('Helvetica-Bold').text(
-            `${isIncome ? '+' : '-'}${formatCurrency(tx.amount)}`,
+            amtStr,
             465,
             currentY + 5,
             { width: 80, align: 'right' }
