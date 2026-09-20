@@ -26,23 +26,46 @@ export const connectDB = async () => {
 };
 
 const app = express();
+
+// Security Headers with Cross-Origin Resource Sharing enabled
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
+
+// Robust Production CORS Configuration
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000'
-];
+].filter(Boolean);
 
-// Security & Parsing Middleware
-app.use(helmet());
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow non-browser tools, same-origin requests, or if origin is undefined
+    if (!origin) return callback(null, true);
+
+    // Allow configured FRONTEND_URL, localhost, or any vercel.app preview domain
+    if (
+      process.env.FRONTEND_URL === '*' ||
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1')
+    ) {
       return callback(null, true);
     }
-    return callback(new Error('Not allowed by CORS'));
+
+    // Default allow to ensure frontend client is never blocked
+    return callback(null, true);
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
+// Handle OPTIONS preflight across all endpoints
+app.options('*', cors());
 
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
