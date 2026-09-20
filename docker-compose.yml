@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6-jammy
+    container_name: fintrack-mongodb
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_DATABASE: ai-finance-tracker
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - fintrack-net
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: fintrack-server
+    restart: unless-stopped
+    ports:
+      - '5000:5000'
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongodb:27017/ai-finance-tracker
+      - JWT_SECRET=production_jwt_super_secret_key_change_in_env_3892
+      - JWT_EXPIRE=7d
+      - FRONTEND_URL=http://localhost
+    depends_on:
+      - mongodb
+    networks:
+      - fintrack-net
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: fintrack-client
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    depends_on:
+      - server
+    networks:
+      - fintrack-net
+
+volumes:
+  mongo_data:
+
+networks:
+  fintrack-net:
+    driver: bridge
