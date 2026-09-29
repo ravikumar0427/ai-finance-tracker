@@ -35,6 +35,31 @@ export const summarizeTransactions = (transactions = [], budget = null) => {
 
   const monthlyTrend = Array.from(monthlyBuckets.values()).sort((a, b) => a.month.localeCompare(b.month));
 
+  const dailyBuckets = new Map();
+  transactions.forEach((item) => {
+    const date = new Date(item.transactionDate);
+    if (!isNaN(date.getTime())) {
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const current = dailyBuckets.get(key) || { date: key, income: 0, expense: 0 };
+      current[item.type] += item.amount;
+      dailyBuckets.set(key, current);
+    }
+  });
+
+  const dailyTrend = Array.from(dailyBuckets.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+  const categoryMonthlyMap = {};
+  expenses.forEach((item) => {
+    const date = new Date(item.transactionDate);
+    if (!isNaN(date.getTime())) {
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (!categoryMonthlyMap[item.category]) {
+        categoryMonthlyMap[item.category] = {};
+      }
+      categoryMonthlyMap[item.category][monthKey] = (categoryMonthlyMap[item.category][monthKey] || 0) + item.amount;
+    }
+  });
+
   return {
     totalIncome,
     totalExpense,
@@ -42,7 +67,9 @@ export const summarizeTransactions = (transactions = [], budget = null) => {
     budgetRemaining,
     monthlyBudget,
     categoryBreakdown,
-    monthlyTrend
+    monthlyTrend,
+    dailyTrend,
+    categoryMonthlyMap
   };
 };
 

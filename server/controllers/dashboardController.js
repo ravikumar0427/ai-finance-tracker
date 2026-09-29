@@ -19,8 +19,19 @@ export const getDashboardSummary = async (req, res) => {
         savings: summary.savings,
         budgetRemaining: summary.budgetRemaining,
         monthlyTrend: summary.monthlyTrend,
+        dailyTrend: summary.dailyTrend,
         categoryBreakdown: summary.categoryBreakdown,
-        recentTransactions: transactions.slice(0, 5)
+        categoryMonthlyMap: summary.categoryMonthlyMap,
+        recentTransactions: transactions.slice(0, 5),
+        allTransactions: transactions.slice(0, 100).map((t) => ({
+          _id: t._id,
+          title: t.title,
+          amount: t.amount,
+          type: t.type,
+          category: t.category,
+          paymentMethod: t.paymentMethod,
+          transactionDate: t.transactionDate
+        }))
       }
     });
   } catch (error) {
