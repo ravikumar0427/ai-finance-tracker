@@ -132,12 +132,30 @@ function Reports() {
               <h3 className="font-semibold text-slate-900 border-b pb-3">Category Breakdown</h3>
               <div className="mt-4 h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={report.categoryBreakdown || []}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="category" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => formatCurrency(value)} />
-                    <Bar dataKey="amount" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                  <BarChart data={report.categoryBreakdown || []} margin={{ top: 10, right: 10, left: 0, bottom: 25 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis
+                      dataKey="category"
+                      interval={0}
+                      stroke="#64748b"
+                      fontSize={11}
+                      tickLine={false}
+                      angle={-18}
+                      textAnchor="end"
+                      height={40}
+                    />
+                    <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#0f172a',
+                        borderRadius: '0.5rem',
+                        border: '1px solid #334155',
+                        color: '#f8fafc',
+                        padding: '8px 12px'
+                      }}
+                      formatter={(value) => formatCurrency(value)}
+                    />
+                    <Bar dataKey="amount" fill="#2563eb" radius={[6, 6, 0, 0]} isAnimationActive={true} animationDuration={1200} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

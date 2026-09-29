@@ -304,6 +304,7 @@ function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis
                   dataKey="date"
+                  interval={0}
                   stroke="#94a3b8"
                   fontSize={11}
                   tickLine={false}
@@ -439,7 +440,7 @@ function Dashboard() {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <XAxis dataKey="month" interval={0} stroke="#94a3b8" fontSize={11} tickLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(value) => [formatCurrency(value), 'Expense']} />
                   <Bar
@@ -467,7 +468,7 @@ function Dashboard() {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <XAxis dataKey="month" interval={0} stroke="#94a3b8" fontSize={11} tickLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(value) => [formatCurrency(value), 'Expense']} />
                   <Line
@@ -504,7 +505,7 @@ function Dashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                  <XAxis dataKey="month" interval={0} stroke="#94a3b8" fontSize={11} tickLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(value) => [formatCurrency(value), 'Expense']} />
                   <Area
@@ -540,7 +541,7 @@ function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={incomeExpense} key={`income-expense-${incomeExpense.length}`}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                <XAxis dataKey="month" interval={0} stroke="#94a3b8" fontSize={11} tickLine={false} />
                 <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(value) => formatCurrency(value)} />
                 <Bar dataKey="Income" fill="#059669" radius={[5, 5, 0, 0]} isAnimationActive={true} animationDuration={1200} />
