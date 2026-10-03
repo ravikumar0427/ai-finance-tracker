@@ -4,10 +4,29 @@ import { summarizeTransactions } from '../services/financeAnalyzer.js';
 
 export const getDashboardSummary = async (req, res) => {
   try {
-    const transactions = await Transaction.find({
+    const { timeframe } = req.query;
+
+    let query = {
       userId: req.userId,
       isDeleted: { $ne: true }
-    }).sort({ transactionDate: -1 });
+    };
+
+    if (timeframe && timeframe !== 'all') {
+      const now = new Date();
+      let cutoff = new Date();
+      if (timeframe === '1m' || timeframe === 'month') {
+        cutoff.setMonth(now.getMonth() - 1);
+      } else if (timeframe === '3m') {
+        cutoff.setMonth(now.getMonth() - 3);
+      } else if (timeframe === '6m') {
+        cutoff.setMonth(now.getMonth() - 6);
+      } else if (timeframe === '1y' || timeframe === 'year') {
+        cutoff.setFullYear(now.getFullYear() - 1);
+      }
+      query.transactionDate = { $gte: cutoff };
+    }
+
+    const transactions = await Transaction.find(query).sort({ transactionDate: -1 });
     const budget = await Budget.findOne({ userId: req.userId });
     const summary = summarizeTransactions(transactions, budget);
 
@@ -22,8 +41,8 @@ export const getDashboardSummary = async (req, res) => {
         dailyTrend: summary.dailyTrend,
         categoryBreakdown: summary.categoryBreakdown,
         categoryMonthlyMap: summary.categoryMonthlyMap,
-        recentTransactions: transactions.slice(0, 5),
-        allTransactions: transactions.slice(0, 100).map((t) => ({
+        recentTransactions: transactions.slice(0, 10),
+        allTransactions: transactions.map((t) => ({
           _id: t._id,
           title: t.title,
           amount: t.amount,

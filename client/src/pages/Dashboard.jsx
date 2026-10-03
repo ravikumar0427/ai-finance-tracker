@@ -37,17 +37,19 @@ function Dashboard() {
   const [error, setError] = useState('')
 
   // Interactive controls
+  const [timeframe, setTimeframe] = useState('1m') // '1m' | '3m' | '6m' | '1y' | 'all'
   const [dailyRange, setDailyRange] = useState('7d') // '7d' | '14d' | '30d' | 'month' | 'all'
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [monthlyViewMode, setMonthlyViewMode] = useState('area') // 'area' | 'line' | 'bar'
   const [activeFilter, setActiveFilter] = useState({ type: null, value: null, label: null })
 
   useEffect(() => {
-    getDashboardSummary()
+    setLoading(true)
+    getDashboardSummary(timeframe)
       .then((response) => setSummary(response.data.data))
       .catch((err) => setError(err.response?.data?.message || 'Unable to load dashboard'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [timeframe])
 
   // 1. Filtered Daily Trend & KPIs
   const filteredDailyTrend = useMemo(() => {
@@ -194,24 +196,59 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      {/* Header with Timeframe Dropdown */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-slate-900">Dashboard</h2>
+            <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200/60">
+              {timeframe === '1m'
+                ? '1 Month'
+                : timeframe === '3m'
+                ? 'Last 3 Months'
+                : timeframe === '6m'
+                ? 'Last 6 Months'
+                : timeframe === '1y'
+                ? 'Last Year'
+                : 'All Time'}
+            </span>
+          </div>
           <p className="mt-1 text-sm text-slate-500">Interactive financial snapshot, daily burn rates, and spending trends.</p>
         </div>
-        {activeFilter.type && (
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm animate-pulse">
-            <span>Filtered: {activeFilter.label}</span>
-            <button
-              onClick={handleClearFilter}
-              className="ml-1 rounded-full p-0.5 hover:bg-blue-200 text-blue-800 transition-colors"
-              title="Clear Filter"
+
+        <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
+          {/* Main Timeframe Dropdown Selector */}
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+            <label htmlFor="dashboard-timeframe" className="text-xs font-bold text-slate-600 pl-2 flex items-center gap-1.5 whitespace-nowrap">
+              <span>📅 Time Period:</span>
+            </label>
+            <select
+              id="dashboard-timeframe"
+              value={timeframe}
+              onChange={(e) => setTimeframe(e.target.value)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
             >
-              ✕
-            </button>
+              <option value="1m">1 Month</option>
+              <option value="3m">Last 3 Months</option>
+              <option value="6m">Last 6 Months</option>
+              <option value="1y">Last Year</option>
+              <option value="all">All</option>
+            </select>
           </div>
-        )}
+
+          {activeFilter.type && (
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm animate-pulse">
+              <span>Filtered: {activeFilter.label}</span>
+              <button
+                onClick={handleClearFilter}
+                className="ml-1 rounded-full p-0.5 hover:bg-blue-200 text-blue-800 transition-colors"
+                title="Clear Filter"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Summary KPI Cards */}

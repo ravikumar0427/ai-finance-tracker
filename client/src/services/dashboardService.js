@@ -1,3 +1,4 @@
 import API from './api'
 
-export const getDashboardSummary = () => API.get('/dashboard/summary')
+export const getDashboardSummary = (timeframe = 'all') =>
+  API.get('/dashboard/summary', { params: { timeframe } })
